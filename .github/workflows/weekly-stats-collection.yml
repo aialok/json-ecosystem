@@ -1,0 +1,44 @@
+name: Weekly-stats-collection
+
+on:
+  schedule:
+    - cron: "0 0 * * 0" # every Sunday at 00:00
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  Weekly-stats-collection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Setup github-script
+        uses: actions/github-script@v7
+        env:
+          token: ${{ secrets.AUTH_TOKEN }}
+          topic: ${{ secrets.TOPIC }}
+          no_of_repos: 10
+        with:
+          script: |
+
+            const {main} = await import('./src/main.js');
+            const data = await main(process.env.token, process.env.topic, process.env.no_of_repos);
+            console.log(data);
