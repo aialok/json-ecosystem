@@ -1,7 +1,7 @@
 import { Octokit } from "octokit";
 import cheerio from "cheerio";
-
-import { DataRecorder } from "./dataRecorder.js";
+import Organisation from "../model/organisation.model.js";
+import { DataRecorder } from "../utils/dataRecorder.js";
 
 const WAYBACK_API_URL = "http://archive.org/wayback/available";
 const CSV_FILE_NAME = `initialTopicRepoData-${Date.now()}.csv`;
@@ -127,8 +127,6 @@ async function processRepository(octokit, owner, repo, topic) {
   return singleRowData;
 }
 
-const dataToSend = [];
-
 export async function main(token, topic, numRepos) {
   const octokit = new Octokit({ auth: token });
 
@@ -139,8 +137,7 @@ export async function main(token, topic, numRepos) {
   console.log(iterator);
   let processedRepos = 0;
 
-  // console.log(iterator)
-  const dataRecorder = new DataRecorder(CSV_FILE_NAME);
+  // const dataRecorder = new DataRecorder(CSV_FILE_NAME);
 
   for await (const iteration of iterator) {
     const data = iteration.data;
@@ -153,19 +150,14 @@ export async function main(token, topic, numRepos) {
         topic
       );
 
-      dataToSend.push({
-        id: processedRepos + 1,
-        data: dataRow,
-      });
+      await Organisation.create(dataRow);
 
       console.log({ dataRow });
-      dataRecorder.appendToCSV(Object.values(dataRow));
+      // dataRecorder.appendToCSV(Object.values(dataRow));
       processedRepos++;
       console.log(`processed ${processedRepos}`);
     }
 
     if (numRepos !== -1 && processedRepos >= numRepos) break;
   }
-
-  return dataToSend;
 }
