@@ -15,9 +15,18 @@ console.log(
   `Starting process with token: REDACTED, topic: ${topic}, numRepos: ${numRepos}`
 );
 
-const job = schedule.scheduleJob("0 17 * * 6", async () => {
+// const job = schedule.scheduleJob("0 17 * * 6", async () => {
+//   const data = await main(token, topic, numRepos);
+//   console.log(data);
+// });
+
+app.post("/api/v1/wayback", async (req, res) => {
   const data = await main(token, topic, numRepos);
-  console.log(data);
+  res.json({
+    message: "Data fetched successfully",
+    success: true,
+    data,
+  });
 });
 
 app.get("/api/v1/wayback", async (req, res) => {
