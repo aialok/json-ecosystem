@@ -15,7 +15,7 @@ console.log(
   `Starting process with token: REDACTED, topic: ${topic}, numRepos: ${numRepos}`
 );
 
-const job = schedule.scheduleJob("0 55 16 ? * SAT *", async () => {
+const job = schedule.scheduleJob("0 17 * * 6", async () => {
   const data = await main(token, topic, numRepos);
   console.log(data);
 });
