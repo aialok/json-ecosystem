@@ -20,13 +20,20 @@ jobs:
           const owner = context.repo.owner;
           const repo = context.repo.repo;
 
-          const response = await fetch(`https://api.github.com/search/issues?q=repo:${owner}/${repo}+type:pr+state:closed+author:${prAuthor}+is:merged`);
-
-          const data = await response.json();
-          const mergedCount = data.total_count;
-
-          core.setOutput('prAuthor', prAuthor);
-          core.setOutput('mergedCount', mergedCount);
+          try {
+            const response = await fetch(`https://api.github.com/search/issues?q=repo:${owner}/${repo}+type:pr+state:closed+author:${prAuthor}+is:merged`);
+  
+            const data = await response.json();
+            const mergedCount = data.total_count;
+  
+            console.log(mergedCount)
+  
+            core.setOutput('prAuthor', prAuthor);
+            core.setOutput('mergedCount', mergedCount);
+          }
+          catch(error) {
+              console.log(error.message);
+          }
 
     - name: Comment on the first merged PR
       if: steps.check_first_pr.outputs.mergedCount == '6'
