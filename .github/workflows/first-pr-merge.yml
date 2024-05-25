@@ -1,0 +1,42 @@
+name: First PR Merge Comment
+
+on:
+  pull_request_target:
+    types: [closed]
+
+jobs:
+  comment-on-first-merge:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+    - name: Check if this is the user's first merged PR
+      id: check_first_pr
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const prAuthor = context.payload.pull_request.user.login;
+          const owner = context.repo.owner;
+          const repo = context.repo.repo;
+
+          // Search for merged pull requests by the user
+          const { data: mergedPRs } = await github.search.issuesAndPullRequests({
+            q: `repo:${owner}/${repo} type:pr state:closed author:${prAuthor} is:merged`,
+          });
+
+          const mergedCount = mergedPRs.total_count;
+          core.setOutput('prAuthor', prAuthor);
+          core.setOutput('mergedCount', mergedCount);
+
+    - name: Comment on the first merged PR
+      if: steps.check_first_pr.outputs.mergedCount == '1'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const prAuthor = core.getInput('prAuthor');
+          const commentUrl = context.payload.pull_request.comments_url;
+          const commentBody = `Congratulations @${prAuthor} on your first merged pull request! 🎉 Thank you for your contribution!`;
+
+          await github.issues.createComment({
+            url: commentUrl,
+            body: commentBody,
+          });
